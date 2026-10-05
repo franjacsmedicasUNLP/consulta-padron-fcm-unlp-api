@@ -1,3 +1,19 @@
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const dataPath = path.join(__dirname, "_data.json");
+const data = JSON.parse(fs.readFileSync(dataPath, "utf8"));
+
+function normalizarDni(valor) {
+  return String(valor || "")
+    .replace(/\D/g, "")
+    .replace(/^0+/, "");
+}
+
 export default function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
@@ -9,22 +25,37 @@ export default function handler(req, res) {
 
   if (req.method !== "GET") {
     return res.status(405).json({
+      encontrado: false,
       error: "Método no permitido"
     });
   }
 
-  const dni = String(req.query.dni || "")
-    .replace(/\D/g, "");
+  const dni = normalizarDni(req.query.dni);
 
-  if (!dni) {
+  if (!dni || dni.length < 7) {
     return res.status(400).json({
       encontrado: false,
-      error: "Ingresá un DNI"
+      error: "Ingresá un DNI válido"
+    });
+  }
+
+  const registro = Object.values(data).find(
+    persona => normalizarDni(persona.dni) === dni
+  );
+
+  if (!registro) {
+    return res.status(404).json({
+      encontrado: false,
+      mensaje: "No se encontró el DNI en el padrón."
     });
   }
 
   return res.status(200).json({
-    encontrado: false,
-    mensaje: "Backend configurado correctamente. El padrón todavía no fue cargado."
+    encontrado: true,
+    resultado: {
+      carrera: registro.carrera,
+      categoria: registro.categoria,
+      mesa: registro.mesa ?? null
+    }
   });
 }
