@@ -1,1 +1,8 @@
-
+{
+  "ejemplo": {
+    "dni": "00000000",
+    "carrera": "Medicina",
+    "categoria": "Estudiante",
+    "mesa": null
+  }
+}
