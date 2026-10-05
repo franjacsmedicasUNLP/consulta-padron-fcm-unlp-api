@@ -39,9 +39,7 @@ export default function handler(req, res) {
     });
   }
 
-  const registro = Object.values(data).find(
-    persona => normalizarDni(persona.dni) === dni
-  );
+  const registro = data[dni];
 
   if (!registro) {
     return res.status(404).json({
@@ -55,7 +53,8 @@ export default function handler(req, res) {
     resultado: {
       carrera: registro.carrera,
       categoria: registro.categoria,
-      mesa: registro.mesa ?? null
+      estadoPadron: registro.estadoPadron,
+      mesa: registro.mesa
     }
   });
 }
