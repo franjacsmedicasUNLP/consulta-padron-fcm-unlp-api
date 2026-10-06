@@ -8,10 +8,11 @@ const __dirname = path.dirname(__filename);
 const dataPath = path.join(__dirname, "_data.json");
 const data = JSON.parse(fs.readFileSync(dataPath, "utf8"));
 
-function normalizarDni(valor) {
+function normalizarLegajo(valor) {
   return String(valor || "")
-    .replace(/\D/g, "")
-    .replace(/^0+/, "");
+    .trim()
+    .replace(/\s+/g, "")
+    .replace(/-/g, "/");
 }
 
 export default function handler(req, res) {
@@ -30,31 +31,34 @@ export default function handler(req, res) {
     });
   }
 
-  const dni = normalizarDni(req.query.dni);
+  const legajo = normalizarLegajo(req.query.legajo);
 
-  if (!dni || dni.length < 7) {
+  if (!legajo || legajo.length < 3) {
     return res.status(400).json({
       encontrado: false,
-      error: "Ingresá un DNI válido"
+      error: "Ingresá un número de legajo válido"
     });
   }
 
-  const registro = data[dni];
+  const registro = Object.values(data).find(
+    persona => normalizarLegajo(persona.legajo) === legajo
+  );
 
   if (!registro) {
     return res.status(404).json({
       encontrado: false,
-      mensaje: "No se encontró el DNI en el padrón."
+      mensaje: "No se encontró el legajo en el padrón."
     });
   }
 
   return res.status(200).json({
     encontrado: true,
     resultado: {
+      legajo: registro.legajo,
       carrera: registro.carrera,
       categoria: registro.categoria,
       estadoPadron: registro.estadoPadron,
       mesa: registro.mesa
     }
   });
-}
+    }
