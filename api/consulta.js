@@ -40,9 +40,19 @@ export default function handler(req, res) {
     });
   }
 
-  const registro = Object.values(data).find(
-    persona => normalizarLegajo(persona.legajo) === legajo
-  );
+  let registro = null;
+
+for (const clave of Object.keys(data)) {
+  const persona = data[clave];
+
+  if (
+    persona &&
+    normalizarLegajo(persona.legajo) === legajo
+  ) {
+    registro = persona;
+    break;
+  }
+}
 
   if (!registro) {
     return res.status(404).json({
